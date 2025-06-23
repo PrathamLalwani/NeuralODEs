@@ -281,6 +281,7 @@ if __name__ == '__main__':
     logger.info(args)
 
     device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
+    print('Using device:', device)
 
     is_odenet = args.network == 'odenet'
 
