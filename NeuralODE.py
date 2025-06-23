@@ -8,7 +8,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-
+from torchvision.transforms.v2 import GaussianNoise
 parser = argparse.ArgumentParser()
 parser.add_argument('--network', type=str, choices=['resnet', 'odenet'], default='odenet')
 parser.add_argument('--tol', type=float, default=1e-3)
@@ -19,7 +19,7 @@ parser.add_argument('--data_aug', type=eval, default=True, choices=[True, False]
 parser.add_argument('--lr', type=float, default=0.1)
 parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--test_batch_size', type=int, default=1000)
-
+parser.add_argument('--eps', type=float, default=0.)
 parser.add_argument('--save', type=str, default='./experiment1')
 parser.add_argument('--debug', action='store_true')
 parser.add_argument('--gpu', type=int, default=0)
@@ -169,6 +169,7 @@ def get_mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc
         transform_train = transforms.Compose([
             transforms.RandomCrop(28, padding=4),
             transforms.ToTensor(),
+            GaussianNoise(mean=0.0, sigma=args.eps, clip=True),
         ])
     else:
         transform_train = transforms.Compose([
