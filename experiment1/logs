@@ -375,7 +375,7 @@ if __name__ == '__main__':
                         b_nfe_meter.avg, train_acc, val_acc
                     )
                 )
-Namespace(network='odenet', tol=0.001, adjoint=False, downsampling_method='conv', nepochs=160, data_aug=True, lr=0.1, batch_size=128, test_batch_size=1000, save='./experiment1', debug=False, gpu=0)
+Namespace(network='odenet', tol=0.001, adjoint=True, downsampling_method='conv', nepochs=160, data_aug=True, lr=0.1, batch_size=128, test_batch_size=1000, save='./experiment1', debug=False, gpu=0)
 Sequential(
   (0): Conv2d(1, 64, kernel_size=(3, 3), stride=(1, 1))
   (1): GroupNorm(32, 64, eps=1e-05, affine=True)
@@ -405,4 +405,5 @@ Sequential(
   (12): Linear(in_features=64, out_features=10, bias=True)
 )
 Number of parameters: 208266
-Epoch 0000 | Time 7.345 (7.345) | NFE-F 26.0 | NFE-B 0.0 | Train Acc 0.0995 | Test Acc 0.1034
+Epoch 0000 | Time 6.309 (6.309) | NFE-F 32.0 | NFE-B 38.0 | Train Acc 0.1081 | Test Acc 0.1078
+Epoch 0001 | Time 6.887 (0.330) | NFE-F 20.3 | NFE-B 24.6 | Train Acc 0.9810 | Test Acc 0.9815
