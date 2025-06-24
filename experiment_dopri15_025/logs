@@ -1,3 +1,4 @@
+C:\Users\uzoch\hackathon_project\NeuralODEs\NeuralODE.py
 import os
 import argparse
 import logging
@@ -376,3 +377,4 @@ if __name__ == '__main__':
                         b_nfe_meter.avg, train_acc, val_acc
                     )
                 )
+Namespace(network='odenet', tol=0.001, adjoint=True, downsampling_method='conv', nepochs=5, data_aug=True, lr=0.1, batch_size=128, test_batch_size=1000, eps=0.25, save='experiment_dopri15_025', debug=False, gpu=0, solver='dopri5')
