@@ -30,7 +30,7 @@ device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 
 true_y0 = torch.tensor([[.1, 0.]]).to(device)
 t = torch.linspace(0., 4., args.data_size).to(device)
 true_A = torch.tensor([[0, 1.0], [-1.0, 0.]]).to(device)
-mu = 10.
+mu = 5.
 
 class Lambda(nn.Module):
 
