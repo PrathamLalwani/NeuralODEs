@@ -12,14 +12,14 @@ parser.add_argument('--method', type=str, choices=['dopri5', 'adams'], default='
 parser.add_argument('--data_size', type=int, default=1000)
 parser.add_argument('--batch_time', type=int, default=10)
 parser.add_argument('--batch_size', type=int, default=20)
-parser.add_argument('--niters', type=int, default=2000)
+parser.add_argument('--niters', type=int, default=1500)
 parser.add_argument('--test_freq', type=int, default=20)
 parser.add_argument('--viz', action='store_true')
 parser.add_argument('--gpu', type=int, default=0)
-parser.add_argument('--adjoint', action='store_true')
+# parser.add_argument('--adjoint', action='store_true')
 parser.add_argument('--save', type=str, default='./experiment1')
 args = parser.parse_args()
-
+args.adjoint = True
 if args.adjoint:
     from torchdiffeq import odeint_adjoint as odeint
 else:
@@ -174,6 +174,8 @@ class RunningAverageMeter(object):
         self.val = val
 
 
+
+
 if __name__ == '__main__':
 
     ii = 0
@@ -181,7 +183,7 @@ if __name__ == '__main__':
 
     func = ODEFunc().to(device)
     
-    optimizer = optim.AdamW(func.parameters(), lr=3e-4)
+    optimizer = optim.AdamW(func.parameters(), lr=1e-5)
     end = time.time()
 
     time_meter = RunningAverageMeter(0.97)
