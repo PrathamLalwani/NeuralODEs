@@ -28,10 +28,17 @@ else:
 device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
 
 true_y0 = torch.tensor([[.1, 0.]]).to(device)
+<<<<<<< HEAD
 t = torch.linspace(0., 16., args.data_size).to(device)
 true_A = torch.tensor([[0, 1.0], [-1.0, 0.]]).to(device)
 mu = 5.
 M = 2.
+=======
+t = torch.linspace(0., 32., args.data_size).to(device)
+true_A = torch.tensor([[0, 1.0], [-1.0, 0.]]).to(device)
+mu = 5.
+
+>>>>>>> 1c6da6a9a9c9cb5be9e1979b1b58821ea7b8d17d
 class Lambda(nn.Module):
 
     def forward(self, t, y):
@@ -83,7 +90,7 @@ def vector_field_error(odefunc, true_odefunc):
 
 
 if args.viz:
-    makedirs('png')
+    makedirs(f'png_model_{mu}_{torch.max(t).cpu().numpy()}')
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(12, 4), facecolor='white')
     ax_traj = fig.add_subplot(141, frameon=False)
@@ -148,7 +155,12 @@ def visualize(true_y, pred_y, odefunc, true_odefunc, itr):
         ax_vecfield_true.set_ylim(-4, 4)
 
         fig.tight_layout()
-        plt.savefig('png/{:03d}'.format(itr))
+        # Create the directory
+        output_dir = f'png_model_{mu}_{torch.max(t).cpu().numpy()}'
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Save the figure
+        plt.savefig(f'{output_dir}/{itr:03d}.png')
         plt.draw()
         plt.pause(0.001)
 
@@ -204,7 +216,7 @@ if __name__ == '__main__':
 
     func = ODEFunc().to(device)
     
-    optimizer = optim.AdamW(func.parameters(), lr=1e-5)
+    optimizer = optim.AdamW(func.parameters(), lr=4e-3)
     end = time.time()
 
     time_meter = RunningAverageMeter(0.97)
