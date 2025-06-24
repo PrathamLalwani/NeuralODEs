@@ -26,15 +26,16 @@ else:
 
 device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
 
-true_y0 = torch.tensor([[2., 0.]]).to(device)
+true_y0 = torch.tensor([[.1, 0.]]).to(device)
 t = torch.linspace(0., 25., args.data_size).to(device)
 true_A = torch.tensor([[0, 1.0], [-1.0, 0.]]).to(device)
-
+mu = 1.
 
 class Lambda(nn.Module):
 
     def forward(self, t, y):
-        return torch.mm(y**1, true_A)
+        y_new = torch.stack([y[:,1],mu * (1-y[:,0]**2)*y[:,1]-y[:,0]],axis=1)
+        return y_new
 
 
 with torch.no_grad():
@@ -153,7 +154,7 @@ if __name__ == '__main__':
 
     func = ODEFunc().to(device)
     
-    optimizer = optim.RMSprop(func.parameters(), lr=1e-3)
+    optimizer = optim.Adam(func.parameters(), lr=1e-3)
     end = time.time()
 
     time_meter = RunningAverageMeter(0.97)
@@ -163,7 +164,7 @@ if __name__ == '__main__':
     for itr in range(1, args.niters + 1):
         optimizer.zero_grad()
         batch_y0, batch_t, batch_y = get_batch()
-        pred_y = odeint(func, batch_y0, batch_t).to(device)
+        pred_y = odeint(func, batch_y0, batch_t,adjoint_options={"norm": "seminorm"}).to(device)
         loss = torch.mean(torch.abs(pred_y - batch_y))
         loss.backward()
         optimizer.step()
