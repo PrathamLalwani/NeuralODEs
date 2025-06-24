@@ -1,3 +1,4 @@
+C:\Users\uzoch\hackathon_project\NeuralODEs\NeuralODE.py
 import os
 import argparse
 import logging
@@ -11,7 +12,7 @@ import torchvision.transforms as transforms
 from torchvision.transforms.v2 import GaussianNoise
 parser = argparse.ArgumentParser()
 parser.add_argument('--network', type=str, choices=['resnet', 'odenet'], default='odenet')
-parser.add_argument('--tol', type=float, default=1e-6)
+parser.add_argument('--tol', type=float, default=1e-3)
 parser.add_argument('--adjoint', type=eval, default=False, choices=[True, False])
 parser.add_argument('--downsampling-method', type=str, default='conv', choices=['conv', 'res'])
 parser.add_argument('--nepochs', type=int, default=5)
@@ -376,3 +377,38 @@ if __name__ == '__main__':
                         b_nfe_meter.avg, train_acc, val_acc
                     )
                 )
+Namespace(network='odenet', tol=0.001, adjoint=True, downsampling_method='conv', nepochs=5, data_aug=True, lr=0.1, batch_size=128, test_batch_size=1000, eps=0.1, save='experiment_dopri15_01', debug=False, gpu=0, solver='dopri5')
+Sequential(
+  (0): Conv2d(1, 64, kernel_size=(3, 3), stride=(1, 1))
+  (1): GroupNorm(32, 64, eps=1e-05, affine=True)
+  (2): ReLU(inplace=True)
+  (3): Conv2d(64, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+  (4): GroupNorm(32, 64, eps=1e-05, affine=True)
+  (5): ReLU(inplace=True)
+  (6): Conv2d(64, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+  (7): ODEBlock(
+    (odefunc): ODEfunc(
+      (norm1): GroupNorm(32, 64, eps=1e-05, affine=True)
+      (relu): ReLU(inplace=True)
+      (conv1): ConcatConv2d(
+        (_layer): Conv2d(65, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+      (norm2): GroupNorm(32, 64, eps=1e-05, affine=True)
+      (conv2): ConcatConv2d(
+        (_layer): Conv2d(65, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+      (norm3): GroupNorm(32, 64, eps=1e-05, affine=True)
+    )
+  )
+  (8): GroupNorm(32, 64, eps=1e-05, affine=True)
+  (9): ReLU(inplace=True)
+  (10): AdaptiveAvgPool2d(output_size=(1, 1))
+  (11): Flatten()
+  (12): Linear(in_features=64, out_features=10, bias=True)
+)
+Number of parameters: 208266
+Epoch 0000 | Time 18.466 (18.466) | NFE-F 26.0 | NFE-B 38.0 | Train Acc 0.1044 | Test Acc 0.1028
+Epoch 0001 | Time 13.194 (0.961) | NFE-F 20.2 | NFE-B 20.4 | Train Acc 0.9690 | Test Acc 0.9736
+Epoch 0002 | Time 12.810 (0.748) | NFE-F 20.1 | NFE-B 20.1 | Train Acc 0.9872 | Test Acc 0.9875
+Epoch 0003 | Time 12.211 (0.673) | NFE-F 20.1 | NFE-B 20.1 | Train Acc 0.9913 | Test Acc 0.9917
+Epoch 0004 | Time 11.403 (0.688) | NFE-F 20.1 | NFE-B 20.0 | Train Acc 0.9925 | Test Acc 0.9929
