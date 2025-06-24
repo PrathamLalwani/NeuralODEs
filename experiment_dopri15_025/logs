@@ -378,3 +378,37 @@ if __name__ == '__main__':
                     )
                 )
 Namespace(network='odenet', tol=0.001, adjoint=True, downsampling_method='conv', nepochs=5, data_aug=True, lr=0.1, batch_size=128, test_batch_size=1000, eps=0.25, save='experiment_dopri15_025', debug=False, gpu=0, solver='dopri5')
+Sequential(
+  (0): Conv2d(1, 64, kernel_size=(3, 3), stride=(1, 1))
+  (1): GroupNorm(32, 64, eps=1e-05, affine=True)
+  (2): ReLU(inplace=True)
+  (3): Conv2d(64, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+  (4): GroupNorm(32, 64, eps=1e-05, affine=True)
+  (5): ReLU(inplace=True)
+  (6): Conv2d(64, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+  (7): ODEBlock(
+    (odefunc): ODEfunc(
+      (norm1): GroupNorm(32, 64, eps=1e-05, affine=True)
+      (relu): ReLU(inplace=True)
+      (conv1): ConcatConv2d(
+        (_layer): Conv2d(65, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+      (norm2): GroupNorm(32, 64, eps=1e-05, affine=True)
+      (conv2): ConcatConv2d(
+        (_layer): Conv2d(65, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+      (norm3): GroupNorm(32, 64, eps=1e-05, affine=True)
+    )
+  )
+  (8): GroupNorm(32, 64, eps=1e-05, affine=True)
+  (9): ReLU(inplace=True)
+  (10): AdaptiveAvgPool2d(output_size=(1, 1))
+  (11): Flatten()
+  (12): Linear(in_features=64, out_features=10, bias=True)
+)
+Number of parameters: 208266
+Epoch 0000 | Time 11.711 (11.711) | NFE-F 32.0 | NFE-B 38.0 | Train Acc 0.1039 | Test Acc 0.1001
+Epoch 0001 | Time 10.587 (0.779) | NFE-F 20.4 | NFE-B 20.2 | Train Acc 0.9721 | Test Acc 0.9752
+Epoch 0002 | Time 11.911 (0.669) | NFE-F 21.5 | NFE-B 20.0 | Train Acc 0.9884 | Test Acc 0.9909
+Epoch 0003 | Time 11.409 (0.680) | NFE-F 24.6 | NFE-B 20.2 | Train Acc 0.9893 | Test Acc 0.9909
+Epoch 0004 | Time 11.876 (0.779) | NFE-F 22.8 | NFE-B 20.1 | Train Acc 0.9891 | Test Acc 0.9886
