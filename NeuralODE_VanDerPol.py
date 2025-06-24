@@ -126,7 +126,7 @@ class ODEFunc(nn.Module):
                 nn.init.constant_(m.bias, val=0)
 
     def forward(self, t, y):
-        return self.net(y)
+        return torch.stack([y[...,1],-y[...,0]],axis=-1) +  self.net(y)
 
 
 class RunningAverageMeter(object):
@@ -177,7 +177,7 @@ if __name__ == '__main__':
                 pred_y = odeint(func, true_y0, t)
                 loss = torch.mean(torch.abs(pred_y - true_y))
                 print('Iter {:04d} | Total Loss {:.6f}'.format(itr, loss.item()))
-                visualize(true_y, pred_y, func, ii)
+                visualize(true_y, pred_y, Lambda(), ii)
                 ii += 1
 
         end = time.time()
