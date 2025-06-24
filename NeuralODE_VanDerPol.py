@@ -6,12 +6,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
+torch.set_default_dtype(torch.float64)
 parser = argparse.ArgumentParser('ODE demo')
 parser.add_argument('--method', type=str, choices=['dopri5', 'adams'], default='dopri5')
-parser.add_argument('--data_size', type=int, default=1000)
-parser.add_argument('--batch_time', type=int, default=10)
-parser.add_argument('--batch_size', type=int, default=20)
+parser.add_argument('--data_size', type=int, default=110)
+parser.add_argument('--batch_time', type=int, default=2)
+parser.add_argument('--batch_size', type=int, default=70)
 parser.add_argument('--niters', type=int, default=2000)
 parser.add_argument('--test_freq', type=int, default=20)
 parser.add_argument('--viz', action='store_true')
@@ -27,9 +27,9 @@ else:
 device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
 
 true_y0 = torch.tensor([[.1, 0.]]).to(device)
-t = torch.linspace(0., 25., args.data_size).to(device)
+t = torch.linspace(0., 10., args.data_size).to(device)
 true_A = torch.tensor([[0, 1.0], [-1.0, 0.]]).to(device)
-mu = 1.
+mu = 1.5
 
 class Lambda(nn.Module):
 
@@ -115,9 +115,12 @@ class ODEFunc(nn.Module):
         super(ODEFunc, self).__init__()
 
         self.net = nn.Sequential(
-            nn.Linear(2, 20),
+            nn.Linear(2, 50),
             nn.Tanh(),
-            nn.Linear(20, 2),
+            nn.Linear(50, 50),
+            nn.Tanh(),
+            nn.Linear(50, 2),
+
         )
 
         for m in self.net.modules():
@@ -154,7 +157,7 @@ if __name__ == '__main__':
 
     func = ODEFunc().to(device)
     
-    optimizer = optim.Adam(func.parameters(), lr=1e-3)
+    optimizer = optim.AdamW(func.parameters(), lr=4e-3)
     end = time.time()
 
     time_meter = RunningAverageMeter(0.97)
@@ -164,7 +167,7 @@ if __name__ == '__main__':
     for itr in range(1, args.niters + 1):
         optimizer.zero_grad()
         batch_y0, batch_t, batch_y = get_batch()
-        pred_y = odeint(func, batch_y0, batch_t,adjoint_options={"norm": "seminorm"}).to(device)
+        pred_y = odeint(func, batch_y0, batch_t).to(device)
         loss = torch.mean(torch.abs(pred_y - batch_y))
         loss.backward()
         optimizer.step()
@@ -177,7 +180,7 @@ if __name__ == '__main__':
                 pred_y = odeint(func, true_y0, t)
                 loss = torch.mean(torch.abs(pred_y - true_y))
                 print('Iter {:04d} | Total Loss {:.6f}'.format(itr, loss.item()))
-                visualize(true_y, pred_y, Lambda(), ii)
+                visualize(true_y, pred_y, func, ii)
                 ii += 1
 
         end = time.time()
