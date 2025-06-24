@@ -28,10 +28,10 @@ else:
 device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
 
 true_y0 = torch.tensor([[.1, 0.]]).to(device)
-t = torch.linspace(0., 4., args.data_size).to(device)
+t = torch.linspace(0., 16., args.data_size).to(device)
 true_A = torch.tensor([[0, 1.0], [-1.0, 0.]]).to(device)
-mu = 10.
-
+mu = 5.
+M = 2.
 class Lambda(nn.Module):
 
     def forward(self, t, y):
@@ -56,9 +56,30 @@ def get_batch():
     return batch_y0.to(device), batch_t.to(device), batch_y.to(device)
 
 
-def makedirs(dirname):
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
+def uniform_sample():
+    X = -M + torch.rand((args.batch_size, 2))*2*M
+    batch_t = t[:args.batch_time]
+    # true_y = odeint(Lambda(), )
+
+
+def vector_field_error(odefunc, true_odefunc):
+    y, x = np.mgrid[-4:4:21j, -4:4:21j]
+    dydt = odefunc(0, torch.Tensor(np.stack([x, y], -1).reshape(21 * 21, 2)).to(device)).cpu().detach().numpy()
+    mag = np.sqrt(dydt[:, 0]**2 + dydt[:, 1]**2).reshape(-1, 1)
+    dydt = (dydt / mag)
+    dydt = dydt.reshape(21, 21, 2)
+    dydt_true = true_odefunc(0, torch.Tensor(np.stack([x, y], -1).reshape(21 * 21, 2)).to(device)).cpu().detach().numpy()
+    mag = np.sqrt(dydt_true[:, 0]**2 + dydt_true[:, 1]**2).reshape(-1, 1)
+    dydt_true = (dydt_true / mag)
+    dydt_true = dydt_true.reshape(21, 21, 2)
+    return np.linalg.norm(dydt_true-dydt,axis=-1)
+
+    
+
+
+# def makedirs(dirname):
+#     if not os.path.exists(dirname):
+#         os.makedirs(dirname)
 
 
 if args.viz:
