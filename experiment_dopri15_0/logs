@@ -1,3 +1,4 @@
+C:\Users\uzoch\hackathon_project\NeuralODEs\NeuralODE.py
 import os
 import argparse
 import logging
@@ -19,12 +20,11 @@ parser.add_argument('--data_aug', type=eval, default=True, choices=[True, False]
 parser.add_argument('--lr', type=float, default=0.1)
 parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--test_batch_size', type=int, default=1000)
-
-parser.add_argument('--save', type=str, default='./experiment_implicit_adams')
+parser.add_argument('--eps', type=float, default=0.)
+parser.add_argument('--save', type=str, default='./experiment1')
 parser.add_argument('--debug', action='store_true')
 parser.add_argument('--gpu', type=int, default=0)
 parser.add_argument('--solver', type=str, default='dopri5', choices=['dopri5', 'euler', 'rk4', 'explicit_adams','implicit_adams', 'bosh3','fehlberg2', 'euler','midpoint','dopri8','adaptive_heun'])
-parser.add_argument('--eps', type=float, default=0.0)   # The level of Gaussian noise to add to the input images.
 args = parser.parse_args()
 
 if args.adjoint:
@@ -164,26 +164,13 @@ class RunningAverageMeter(object):
             self.avg = self.avg * self.momentum + val * (1 - self.momentum)
         self.val = val
 
-# Add Gaussian noise to each pixel in the input image individually, making sure to scale it by the largest pixel value.
-class AddGaussianNoise:
-    def __init__(self, mean=0.0, std=0.0):
-        self.mean = mean
-        self.std = std
-        print(f"Adding Gaussian noise with mean: {self.mean}, std: {self.std}")
-
-    def __call__(self, tensor):
-        noise = torch.randn_like(tensor) * self.std * tensor.max() + self.mean
-        return tensor + noise
-    
-    def __repr__(self):
-        return f"{self.__class__.__name__}(mean={self.mean}, std={self.std})"
 
 def get_mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc=1.0):
     if data_aug:
         transform_train = transforms.Compose([
             transforms.RandomCrop(28, padding=4),
             transforms.ToTensor(),
-            AddGaussianNoise(mean=0.0, std=args.eps),  # Add Gaussian noise
+            GaussianNoise(mean=0.0, sigma=args.eps, clip=True),
         ])
     else:
         transform_train = transforms.Compose([
@@ -297,7 +284,6 @@ if __name__ == '__main__':
     logger.info(args)
 
     device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
-    print('Using device:', device)
 
     is_odenet = args.network == 'odenet'
 
@@ -382,7 +368,7 @@ if __name__ == '__main__':
                 train_acc = accuracy(model, train_eval_loader)
                 val_acc = accuracy(model, test_loader)
                 if val_acc > best_acc:
-                    torch.save({'state_dict': model.state_dict(), 'args': args}, os.path.join(args.save, f'model_{args.eps}_noise.pth'))
+                    torch.save({'state_dict': model.state_dict(), 'args': args}, os.path.join(args.save, 'model.pth'))
                     best_acc = val_acc
                 logger.info(
                     "Epoch {:04d} | Time {:.3f} ({:.3f}) | NFE-F {:.1f} | NFE-B {:.1f} | "
@@ -391,3 +377,38 @@ if __name__ == '__main__':
                         b_nfe_meter.avg, train_acc, val_acc
                     )
                 )
+Namespace(network='odenet', tol=0.001, adjoint=True, downsampling_method='conv', nepochs=5, data_aug=True, lr=0.1, batch_size=128, test_batch_size=1000, eps=0.0, save='experiment_dopri15_0', debug=False, gpu=0, solver='dopri5')
+Sequential(
+  (0): Conv2d(1, 64, kernel_size=(3, 3), stride=(1, 1))
+  (1): GroupNorm(32, 64, eps=1e-05, affine=True)
+  (2): ReLU(inplace=True)
+  (3): Conv2d(64, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+  (4): GroupNorm(32, 64, eps=1e-05, affine=True)
+  (5): ReLU(inplace=True)
+  (6): Conv2d(64, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+  (7): ODEBlock(
+    (odefunc): ODEfunc(
+      (norm1): GroupNorm(32, 64, eps=1e-05, affine=True)
+      (relu): ReLU(inplace=True)
+      (conv1): ConcatConv2d(
+        (_layer): Conv2d(65, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+      (norm2): GroupNorm(32, 64, eps=1e-05, affine=True)
+      (conv2): ConcatConv2d(
+        (_layer): Conv2d(65, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+      (norm3): GroupNorm(32, 64, eps=1e-05, affine=True)
+    )
+  )
+  (8): GroupNorm(32, 64, eps=1e-05, affine=True)
+  (9): ReLU(inplace=True)
+  (10): AdaptiveAvgPool2d(output_size=(1, 1))
+  (11): Flatten()
+  (12): Linear(in_features=64, out_features=10, bias=True)
+)
+Number of parameters: 208266
+Epoch 0000 | Time 11.281 (11.281) | NFE-F 32.0 | NFE-B 38.0 | Train Acc 0.0986 | Test Acc 0.0958
+Epoch 0001 | Time 11.841 (0.783) | NFE-F 20.3 | NFE-B 24.0 | Train Acc 0.9727 | Test Acc 0.9748
+Epoch 0002 | Time 439.964 (4.957) | NFE-F 20.1 | NFE-B 22.5 | Train Acc 0.9870 | Test Acc 0.9874
+Epoch 0003 | Time 10.092 (0.673) | NFE-F 20.6 | NFE-B 20.8 | Train Acc 0.9921 | Test Acc 0.9926
+Epoch 0004 | Time 10.484 (0.633) | NFE-F 20.2 | NFE-B 20.6 | Train Acc 0.9915 | Test Acc 0.9903
