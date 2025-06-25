@@ -27,10 +27,10 @@ else:
 
 device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
 
-true_y0 = torch.tensor([[.1, 0.]]).to(device)
+true_y0 = torch.tensor([[np.random.uniform(-0.5, 0.5), np.random.uniform(-0.5, 0.5)]]).to(device)
 t = torch.linspace(0., 16., args.data_size).to(device)
 true_A = torch.tensor([[0, 1.0], [-1.0, 0.]]).to(device)
-mu = 5.
+mu = 0.5
 M = 2.
 
 class Lambda(nn.Module):
@@ -84,7 +84,7 @@ def vector_field_error(odefunc, true_odefunc):
 
 
 if args.viz:
-    makedirs(f'png_model_{mu}_{torch.max(t).cpu().numpy()}')
+    makedirs(f'png_model_test_{mu}_{torch.max(t).cpu().numpy()}')
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(12, 4), facecolor='white')
     ax_traj = fig.add_subplot(141, frameon=False)
