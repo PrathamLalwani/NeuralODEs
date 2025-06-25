@@ -1,4 +1,4 @@
-C:\Users\ColeW\OneDrive\Documents\.Repos\NeuralODEs\NeuralODE.py
+C:\Users\uzoch\hackathon_project\NeuralODEs\NeuralODE.py
 import os
 import argparse
 import logging
@@ -9,18 +9,18 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-
+from torchvision.transforms.v2 import GaussianNoise
 parser = argparse.ArgumentParser()
 parser.add_argument('--network', type=str, choices=['resnet', 'odenet'], default='odenet')
 parser.add_argument('--tol', type=float, default=1e-3)
 parser.add_argument('--adjoint', type=eval, default=False, choices=[True, False])
 parser.add_argument('--downsampling-method', type=str, default='conv', choices=['conv', 'res'])
-parser.add_argument('--nepochs', type=int, default=160)
+parser.add_argument('--nepochs', type=int, default=5)
 parser.add_argument('--data_aug', type=eval, default=True, choices=[True, False])
 parser.add_argument('--lr', type=float, default=0.1)
 parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--test_batch_size', type=int, default=1000)
-
+parser.add_argument('--eps', type=float, default=0.)
 parser.add_argument('--save', type=str, default='./experiment1')
 parser.add_argument('--debug', action='store_true')
 parser.add_argument('--gpu', type=int, default=0)
@@ -170,6 +170,7 @@ def get_mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc
         transform_train = transforms.Compose([
             transforms.RandomCrop(28, padding=4),
             transforms.ToTensor(),
+            GaussianNoise(mean=0.0, sigma=args.eps, clip=True),
         ])
     else:
         transform_train = transforms.Compose([
@@ -283,7 +284,6 @@ if __name__ == '__main__':
     logger.info(args)
 
     device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
-    print('Using device:', device)
 
     is_odenet = args.network == 'odenet'
 
@@ -377,7 +377,7 @@ if __name__ == '__main__':
                         b_nfe_meter.avg, train_acc, val_acc
                     )
                 )
-Namespace(adjoint=True, batch_size=128, data_aug=True, debug=False, downsampling_method='conv', gpu=0, lr=0.1, nepochs=5, network='odenet', save='./experiment1', solver='implicit_adams', test_batch_size=1000, tol=0.001)
+Namespace(network='odenet', tol=0.001, adjoint=True, downsampling_method='conv', nepochs=5, data_aug=True, lr=0.1, batch_size=128, test_batch_size=1000, eps=0.5, save='experiment_dopri15_05', debug=False, gpu=0, solver='dopri5')
 Sequential(
   (0): Conv2d(1, 64, kernel_size=(3, 3), stride=(1, 1))
   (1): GroupNorm(32, 64, eps=1e-05, affine=True)
@@ -407,3 +407,8 @@ Sequential(
   (12): Linear(in_features=64, out_features=10, bias=True)
 )
 Number of parameters: 208266
+Epoch 0000 | Time 11.033 (11.033) | NFE-F 32.0 | NFE-B 38.0 | Train Acc 0.0912 | Test Acc 0.0916
+Epoch 0001 | Time 12.110 (0.800) | NFE-F 21.8 | NFE-B 20.7 | Train Acc 0.9536 | Test Acc 0.9577
+Epoch 0002 | Time 11.979 (0.758) | NFE-F 25.3 | NFE-B 24.6 | Train Acc 0.9824 | Test Acc 0.9863
+Epoch 0003 | Time 11.460 (0.800) | NFE-F 26.1 | NFE-B 23.8 | Train Acc 0.9877 | Test Acc 0.9884
+Epoch 0004 | Time 11.709 (0.749) | NFE-F 26.1 | NFE-B 23.3 | Train Acc 0.9863 | Test Acc 0.9878
