@@ -28,17 +28,11 @@ else:
 device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
 
 true_y0 = torch.tensor([[.1, 0.]]).to(device)
-<<<<<<< HEAD
 t = torch.linspace(0., 16., args.data_size).to(device)
 true_A = torch.tensor([[0, 1.0], [-1.0, 0.]]).to(device)
 mu = 5.
 M = 2.
-=======
-t = torch.linspace(0., 32., args.data_size).to(device)
-true_A = torch.tensor([[0, 1.0], [-1.0, 0.]]).to(device)
-mu = 5.
 
->>>>>>> 1c6da6a9a9c9cb5be9e1979b1b58821ea7b8d17d
 class Lambda(nn.Module):
 
     def forward(self, t, y):
@@ -66,7 +60,7 @@ def get_batch():
 def uniform_sample():
     X = -M + torch.rand((args.batch_size, 2))*2*M
     batch_t = t[:args.batch_time]
-    # true_y = odeint(Lambda(), )
+    true_y = odeint(Lambda(), )
 
 
 def vector_field_error(odefunc, true_odefunc):
