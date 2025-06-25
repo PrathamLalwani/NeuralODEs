@@ -9,7 +9,7 @@ import torch.optim as optim
 torch.set_default_dtype(torch.float64)
 parser = argparse.ArgumentParser('ODE demo')
 parser.add_argument('--method', type=str, choices=['dopri5', 'adams'], default='dopri5')
-parser.add_argument('--data_size', type=int, default=1000)
+parser.add_argument('--data_size', type=int, default=100)
 parser.add_argument('--batch_time', type=int, default=10)
 parser.add_argument('--batch_size', type=int, default=20)
 parser.add_argument('--niters', type=int, default=1500)
@@ -27,10 +27,10 @@ else:
 
 device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
 
-true_y0 = torch.tensor([[np.random.uniform(-0.5, 0.5), np.random.uniform(-0.5, 0.5)]]).to(device)
-t = torch.linspace(0., 16., args.data_size).to(device)
+true_y0 = torch.tensor([[.1, 0.]]).to(device)
+t = torch.linspace(0., 2., args.batch_time).to(device)
 true_A = torch.tensor([[0, 1.0], [-1.0, 0.]]).to(device)
-mu = 0.5
+mu = 1.
 M = 2.
 
 class Lambda(nn.Module):
@@ -57,11 +57,12 @@ def get_batch():
     return batch_y0.to(device), batch_t.to(device), batch_y.to(device)
 
 
-def uniform_sample():
-    X = -M + torch.rand((args.batch_size, 2))*2*M
-    batch_t = t[:args.batch_time]
-    true_y = odeint(Lambda(), )
-
+def get_random_sample():
+    y0s = -M + torch.rand((10, 2))*2*M
+    batch_t = t
+    true_y = odeint(Lambda(), y0s, batch_t, method = 'dopri5')
+    return y0s.to(device),batch_t.to(device),true_y.to(device)
+    
 
 def vector_field_error(odefunc, true_odefunc):
     y, x = np.mgrid[-4:4:21j, -4:4:21j]
@@ -210,16 +211,17 @@ if __name__ == '__main__':
 
     func = ODEFunc().to(device)
     
-    optimizer = optim.AdamW(func.parameters(), lr=4e-3)
+    optimizer = optim.AdamW(func.parameters(), lr=3e-4)
     end = time.time()
 
     time_meter = RunningAverageMeter(0.97)
     
     loss_meter = RunningAverageMeter(0.97)
     min_loss = float('inf')
+    batch_y0, batch_t, batch_y = get_random_sample()
+
     for itr in range(1, args.niters + 1):
         optimizer.zero_grad()
-        batch_y0, batch_t, batch_y = get_batch()
         pred_y = odeint(func, batch_y0, batch_t).to(device)
         loss = torch.mean(torch.abs(pred_y - batch_y))
         loss.backward()
